@@ -2,13 +2,14 @@
 
 author "Andyyy#7666"
 description "Clothing store for ND framework"
-version "1.0.0"
+version "2.0.0"
 
 fx_version "cerulean"
 game "gta5"
 lua54 "yes"
 
 shared_scripts {
+    "@ND_Core/init.lua",
     "@ox_lib/init.lua",
     "config.lua"
 }

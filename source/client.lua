@@ -1,73 +1,56 @@
-local ped
-local pedCoords
-local notified = false
-local found = false
+local function startChange(coords, options, i)
+    local ped = cache.ped
+    local oldAppearance = {
+        model = GetEntityModel(ped),
+        tattoos = exports["fivem-appearance"]:getPedTattoos(ped),
+        appearance = exports["fivem-appearance"]:getPedAppearance(ped)
+    }
+    SetEntityCoords(ped, coords.x, coords.y, coords.z-1.0)
+    SetEntityHeading(ped, coords.w)
+    Wait(250)
+    exports["fivem-appearance"]:startPlayerCustomization(function(appearance)
+        if not appearance then return end
 
-CreateThread(function()
-    for _, store in pairs(config) do
-        if store.blip then
-            for _, location in pairs(store.locations) do
-                local blip = AddBlipForCoord(location)
-                SetBlipSprite(blip, store.blip.sprite)
-                SetBlipColour(blip, 3)
-                SetBlipScale(blip, 0.65)
-                SetBlipAsShortRange(blip, true)
-                BeginTextCommandSetBlipName("STRING")
-                AddTextComponentString(store.blip.name)
-                EndTextCommandSetBlipName(blip)
-            end
-        end
-    end
-    while true do
-        Wait(500)
         ped = PlayerPedId()
-        pedCoords = GetEntityCoords(ped)
-    end
-end)
+        local clothing = {
+            model = GetEntityModel(ped),
+            tattoos = exports["fivem-appearance"]:getPedTattoos(ped),
+            appearance = exports["fivem-appearance"]:getPedAppearance(ped)
+        }
 
-CreateThread(function()
-    local wait = 500
-    while true do
-        Wait(wait)
-        for id, store in pairs(config) do
-            for _, location in pairs(store.locations) do
-                local dist = #(location - pedCoords)
-                if dist < 12.0 then
-                    found = true
-                    DrawMarker(1, location.x, location.y, location.z - 1, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.5, 2.5, 0.5, 40, 140, 255, 150, false, false, 2, false, nil, nil, false)
-                    if dist < 1.2 then
-                        if not notified then
-                            notified = true
-                            lib.showTextUI("[E] - " .. store.notification)
-                        end
-                        if IsControlJustPressed(0, 51) then
-                            exports["fivem-appearance"]:startPlayerCustomization(function(appearance)
-                                if appearance then
-                                    local clothing = {
-                                        model = GetEntityModel(ped),
-                                        tattoos = exports["fivem-appearance"]:getPedTattoos(ped),
-                                        appearance = exports["fivem-appearance"]:getPedAppearance(ped)
-                                    }
-                                    Wait(1000)
-                                    TriggerServerEvent("ND:updateClothes", clothing)
-                                    TriggerServerEvent("ND_ClothingStore:clothingPurchase", id)
-                                end
-                            end, store.options)
-                        end
-                    elseif notified then
-                        notified = false
-                        lib.hideTextUI()
-                    end
-                    break
-                end
-            end
-            if found then
-                found = false
-                wait = 0
-                break
-            else
-                wait = 500
-            end
+        if not lib.callback.await("ND_AppearanceShops:clothingPurchase", false, i, clothing) then
+            exports["fivem-appearance"]:setPlayerModel(oldAppearance.model)
+            ped = PlayerPedId()
+            exports["fivem-appearance"]:setPedTattoos(ped, oldAppearance.tattoos)
+            exports["fivem-appearance"]:setPedAppearance(ped, oldAppearance.appearance)
         end
+    end, options)
+end
+
+for i=1, #Config do
+    local info = Config[i]
+    for j=1, #info.locations do
+        local location = info.locations[j]
+        NDCore.createAiPed({
+            model = location.model,
+            coords = location.worker,
+            distance = 25.0,
+            blip = info.blip,
+            anim = {
+                dict = "anim@amb@casino@valet_scenario@pose_d@",
+                clip = "base_a_m_y_vinewood_01"
+            },
+            options = {
+                {
+                    name = "nd_core:appearanceShops",
+                    icon = "fa-solid fa-bag-shopping",
+                    label = info.text,
+                    distance = 2.0,
+                    onSelect = function(data)
+                        startChange(location.change, info.appearance, i)
+                    end
+                }
+            },
+        })
     end
-end)
+end
