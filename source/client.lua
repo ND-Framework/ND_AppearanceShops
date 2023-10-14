@@ -108,7 +108,9 @@ lib.registerContext({
             onSelect = function()
                 local selected = wardrobe[currentOpenWardrobe]
                 if not selected then return end
-                selected.name = inputOutfitName()
+                local name = inputOutfitName()
+                if not name then return end
+                selected.name = name
             end
         },
         {
@@ -123,7 +125,6 @@ lib.registerContext({
                     centered = true,
                     cancel = true
                 })
-                print(alert)
                 if alert ~= "confirm" then return end
                 table.remove(wardrobe, currentOpenWardrobe)
             end
