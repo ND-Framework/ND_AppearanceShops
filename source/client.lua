@@ -100,6 +100,13 @@ lib.registerContext({
             onSelect = function()
                 local selected = wardrobe[currentOpenWardrobe]
                 if not selected then return end
+                if selected.appearance.model ~= GetEntityModel(cache.ped) then
+                    return lib.notify({
+                        title = "Incorrect player model",
+                        description = "This saved outfit is not for the current player model",
+                        type = "error"
+                    })
+                end
                 fivemAppearance:setPedAppearance(cache.ped, selected.appearance)
             end
         },
