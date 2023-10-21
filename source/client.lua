@@ -2,6 +2,7 @@ local wardrobeId = "ND_AppearanceShops:wardrobe"
 local wardrobeSelectedId = ("%s_selected"):format(wardrobeId)
 local wardrobe = json.decode(GetResourceKvpString(wardrobeId)) or {}
 local currentOpenWardrobe
+local fivemAppearance = exports["fivem-appearance"]
 
 local function inputOutfitName()
     local input = lib.inputDialog("Save current outfit", {"Outfit name:"})
@@ -13,7 +14,7 @@ end
 
 local function saveWardrobe(name)
     if not name then return end
-    local appearance = exports["fivem-appearance"]:getPedAppearance(cache.ped)
+    local appearance = fivemAppearance:getPedAppearance(cache.ped)
     appearance.hair = nil
     appearance.headOverlays = nil
     appearance.tattoos = nil
@@ -63,27 +64,27 @@ local function startChange(coords, options, i)
     local ped = cache.ped
     local oldAppearance = {
         model = GetEntityModel(ped),
-        tattoos = exports["fivem-appearance"]:getPedTattoos(ped),
-        appearance = exports["fivem-appearance"]:getPedAppearance(ped)
+        tattoos = fivemAppearance:getPedTattoos(ped),
+        appearance = fivemAppearance:getPedAppearance(ped)
     }
     SetEntityCoords(ped, coords.x, coords.y, coords.z-1.0)
     SetEntityHeading(ped, coords.w)
     Wait(250)
-    exports["fivem-appearance"]:startPlayerCustomization(function(appearance)
+    fivemAppearance:startPlayerCustomization(function(appearance)
         if not appearance then return end
 
         ped = PlayerPedId()
         local clothing = {
             model = GetEntityModel(ped),
-            tattoos = exports["fivem-appearance"]:getPedTattoos(ped),
-            appearance = exports["fivem-appearance"]:getPedAppearance(ped)
+            tattoos = fivemAppearance:getPedTattoos(ped),
+            appearance = fivemAppearance:getPedAppearance(ped)
         }
 
         if not lib.callback.await("ND_AppearanceShops:clothingPurchase", false, i, clothing) then
-            exports["fivem-appearance"]:setPlayerModel(oldAppearance.model)
+            fivemAppearance:setPlayerModel(oldAppearance.model)
             ped = PlayerPedId()
-            exports["fivem-appearance"]:setPedTattoos(ped, oldAppearance.tattoos)
-            exports["fivem-appearance"]:setPedAppearance(ped, oldAppearance.appearance)
+            fivemAppearance:setPedTattoos(ped, oldAppearance.tattoos)
+            fivemAppearance:setPedAppearance(ped, oldAppearance.appearance)
         end
     end, options)
 end
@@ -99,7 +100,7 @@ lib.registerContext({
             onSelect = function()
                 local selected = wardrobe[currentOpenWardrobe]
                 if not selected then return end
-                exports["fivem-appearance"]:setPedAppearance(cache.ped, selected.appearance)
+                fivemAppearance:setPedAppearance(cache.ped, selected.appearance)
             end
         },
         {
