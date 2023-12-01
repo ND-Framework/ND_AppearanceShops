@@ -89,6 +89,59 @@ local function startChange(coords, options, i)
     end, options)
 end
 
+local function getStoreNumber(store)
+    for i=1, #Config do
+        if store == Config[i] then
+            return i
+        end
+    end
+
+    local number = #Config+1
+    Config[number] = store
+    return number
+end
+
+local function createClothingStore(info)
+    local storeNumber = getStoreNumber(info)
+    for i=1, #info.locations do
+        local location = info.locations[i]
+        local options = {
+            {
+                name = "nd_core:appearanceShops",
+                icon = "fa-solid fa-bag-shopping",
+                label = info.text,
+                distance = 2.0,
+                onSelect = function(data)
+                    startChange(location.change, info.appearance, storeNumber)
+                end
+            }
+        }
+        if info.appearance?.components then
+            options[#options+1] = {
+                name = "nd_core:appearanceOutfit",
+                icon = "fa-solid fa-shirt",
+                label = "View outfits",
+                distance = 2.0,
+                onSelect = function(data)
+                    openWardrobe()
+                end
+            }
+        end
+        NDCore.createAiPed({
+            resource = GetInvokingResource(),
+            model = location.model,
+            coords = location.worker,
+            distance = 25.0,
+            blip = info.blip,
+            options = options,
+            anim = {
+                dict = "anim@amb@casino@valet_scenario@pose_d@",
+                clip = "base_a_m_y_vinewood_01"
+            }
+        })
+    end
+end
+
 lib.registerContext({
     id = wardrobeSelectedId,
     title = "Outfits",
@@ -141,46 +194,13 @@ lib.registerContext({
 })
 
 for i=1, #Config do
-    local info = Config[i]
-    for j=1, #info.locations do
-        local location = info.locations[j]
-        local options = {
-            {
-                name = "nd_core:appearanceShops",
-                icon = "fa-solid fa-bag-shopping",
-                label = info.text,
-                distance = 2.0,
-                onSelect = function(data)
-                    startChange(location.change, info.appearance, i)
-                end
-            }
-        }
-        if info.appearance?.components then
-            options[#options+1] = {
-                name = "nd_core:appearanceOutfit",
-                icon = "fa-solid fa-shirt",
-                label = "View outfits",
-                distance = 2.0,
-                onSelect = function(data)
-                    openWardrobe()
-                end
-            }
-        end
-        NDCore.createAiPed({
-            model = location.model,
-            coords = location.worker,
-            distance = 25.0,
-            blip = info.blip,
-            options = options,
-            anim = {
-                dict = "anim@amb@casino@valet_scenario@pose_d@",
-                clip = "base_a_m_y_vinewood_01"
-            }
-        })
-    end
+    createClothingStore(Config[i])
 end
 
 AddEventHandler("onResourceStop", function(resource)
     if resource ~= cache.resource then return end
     SetResourceKvp(wardrobeId, json.encode(wardrobe))
 end)
+
+exports("openWardrobe", openWardrobe)
+exports("createClothingStore", createClothingStore)
