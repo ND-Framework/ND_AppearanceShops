@@ -18,4 +18,4 @@
 [![Need Support?](https://user-images.githubusercontent.com/86536434/147299047-73691b78-2690-4786-b58b-27d24e48a0d2.png)](https://discord.gg/Z9Mxu72zZ6)
 
 ## Command:
-[saverpped](Use /saverpped to save your current ped for the next roleplay! even when changing characters you can be sure that your ped will be there.)
+(Use /saverpped to save your current ped for the next roleplay! even when changing characters you can be sure that your ped will be there.)
