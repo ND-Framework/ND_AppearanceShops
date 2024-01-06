@@ -3,6 +3,15 @@ local wardrobeSelectedId = ("%s_selected"):format(wardrobeId)
 local wardrobe = json.decode(GetResourceKvpString(wardrobeId)) or {}
 local currentOpenWardrobe
 local fivemAppearance = exports["fivem-appearance"]
+Peds = {}
+
+RegisterNetEvent("ND:characterLoaded")
+AddEventHandler("ND:characterLoaded", function()
+    local ped = PlayerPedId()
+    print(json.decode(GetResourceKvpString("ND_AppearanceShops:savedclothing")))
+    fivemAppearance:setPedAppearance(ped, json.decode(GetResourceKvpString("ND_AppearanceShops:savedclothing")))
+end)
+
 
 local function inputOutfitName()
     local input = lib.inputDialog("Save current outfit", {"Outfit name:"})
@@ -24,6 +33,8 @@ local function saveWardrobe(name)
         name = name,
         appearance = appearance
     }
+    Outfit = appearance
+    SetResourceKvp("ND_AppearanceShops:savedclothing", json.encode(Outfit))
     return true
 end
 
@@ -79,7 +90,7 @@ local function startChange(coords, options, i)
             tattoos = fivemAppearance:getPedTattoos(ped),
             appearance = fivemAppearance:getPedAppearance(ped)
         }
-
+        SetResourceKvp("ND_AppearanceShops:savedclothing", json.encode(appearance))
         if not lib.callback.await("ND_AppearanceShops:clothingPurchase", false, i, clothing) then
             fivemAppearance:setPlayerModel(oldAppearance.model)
             ped = PlayerPedId()
@@ -127,7 +138,7 @@ local function createClothingStore(info)
                 end
             }
         end
-        NDCore.createAiPed({
+        Peds[#Peds+1] = NDCore.createAiPed({
             resource = GetInvokingResource(),
             model = location.model,
             coords = location.worker,
@@ -197,9 +208,29 @@ for i=1, #Config do
     createClothingStore(Config[i])
 end
 
+
+
+
+
+
 AddEventHandler("onResourceStop", function(resource)
     if resource ~= cache.resource then return end
     SetResourceKvp(wardrobeId, json.encode(wardrobe))
+    SetResourceKvp("ND_AppearanceShops:savedclothing", json.encode(Outfit))
+    for _, ped in pairs(Peds) do
+        NDCore.removeAiPed(ped)
+    end
+end)
+
+
+RegisterCommand("saverpped", function ()
+    local appearance = fivemAppearance:getPedAppearance(PlayerPedId())
+    appearance.hair = nil
+    appearance.headOverlays = nil
+    appearance.tattoos = nil
+    appearance.faceFeatures = nil
+    appearance.headBlend = nil
+    SetResourceKvp("ND_AppearanceShops:savedclothing", json.encode(appearance))
 end)
 
 exports("openWardrobe", openWardrobe)
