@@ -51,9 +51,10 @@ local function getWardrobe()
     return options
 end
 
-local function openWardrobe()
+local function openWardrobe(menu)
     lib.registerContext({
         id = wardrobeId,
+        menu = menu,
         title = "Outfits",
         options = getWardrobe()
     })
