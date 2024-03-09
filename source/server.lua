@@ -15,7 +15,7 @@ lib.callback.register("ND_AppearanceShops:clothingPurchase", function(src, store
         return
     end
 
-    if clothing and type(clothing) ~= "table" then
+    if clothing and type(clothing) == "table" then
         player.setMetadata("clothing", clothing)
     end
     player.notify({
